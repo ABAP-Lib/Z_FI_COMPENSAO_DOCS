@@ -39,6 +39,7 @@ CLASS zcl_fi_compensacao_docs DEFINITION
             compensar
                 IMPORTING
                     IV_AUGLV TYPE AUGLV DEFAULT C_AUGLV_TRANSFER_POST_CLEARING
+                    IV_MODE TYPE RFPDO-ALLGAZMD DEFAULT 'N'
                 EXPORTING
                     et_blntab TYPE ty_t_blntab
                 RAISING
@@ -138,7 +139,7 @@ CLASS zcl_fi_compensacao_docs IMPLEMENTATION.
 *            i_group            = space
 *            i_holddate         = space
 *            i_keep             = space
-*            i_mode             = 'N'
+            i_mode             = IV_MODE
 *            i_update           = 'S'
 *            i_user             = space
 *            i_xbdcc            = space
@@ -212,14 +213,32 @@ CLASS zcl_fi_compensacao_docs IMPLEMENTATION.
           .
         IF SY-SUBRC <> 0.
 
-            MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
-            WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4
+            MESSAGE ID lv_msgid TYPE lv_msgty NUMBER lv_MSGNO
+            WITH lv_MSGV1 lv_MSGV2 lv_MSGV3 lv_MSGV4
             INTO lv_tmp_message.
 
             RAISE EXCEPTION TYPE zcx_fi_compensacao_docs.
 
         ENDIF.
 
+        if et_blntab is INITIAL.
+
+            IF lv_msgid is NOT INITIAL AND lv_msgno is NOT INITIAL AND lv_msgty is NOT INITIAL.
+
+                MESSAGE ID lv_msgid TYPE lv_msgty NUMBER lv_MSGNO
+                WITH lv_MSGV1 lv_MSGV2 lv_MSGV3 lv_MSGV4
+                INTO lv_tmp_message.
+
+            ELSE.
+
+                " Não foi criado documento durante a compensação.
+                MESSAGE E010(ZDNI) INTO lv_tmp_message.
+
+            ENDIF.
+
+            RAISE EXCEPTION TYPE zcx_fi_compensacao_docs.
+
+        ENDIF.
 
         CALL FUNCTION 'POSTING_INTERFACE_END'
           EXPORTING
