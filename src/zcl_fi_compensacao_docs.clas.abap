@@ -36,6 +36,16 @@ CLASS zcl_fi_compensacao_docs DEFINITION
                     IV_AGKON TYPE FTCLEAR-AGKON
                     iv_belnr TYPE belnr_d,
 
+            ADD_POSITION
+                IMPORTING
+                    IV_AGKOA TYPE FTCLEAR-AGKOA
+                    IV_XNOPS TYPE FTCLEAR-XNOPS DEFAULT 'X'
+                    IV_agbuk TYPE FTCLEAR-agbuk OPTIONAL
+                    IV_AGKON TYPE FTCLEAR-AGKON
+                    iv_belnr TYPE belnr_d
+                    iv_gjahr TYPE gjahr
+                    iv_buzei TYPE buzei,
+
             compensar
                 IMPORTING
                     IV_AUGLV TYPE AUGLV DEFAULT C_AUGLV_TRANSFER_POST_CLEARING
@@ -90,6 +100,18 @@ CLASS zcl_fi_compensacao_docs IMPLEMENTATION.
         <LS_FTCLEAR>-SELFD = 'BELNR'.
         <LS_FTCLEAR>-SELVON = iv_belnr.
 
+
+    ENDMETHOD.
+
+    METHOD ADD_POSITION.
+
+        me->add_document(
+            IV_AGKOA = IV_AGKOA
+            IV_XNOPS = IV_XNOPS
+            IV_agbuk = IV_agbuk
+            IV_AGKON = IV_AGKON
+            IV_BELNR = |{ IV_BELNR }{ iv_gjahr }{ iv_buzei }|
+        ).
 
     ENDMETHOD.
 
